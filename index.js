@@ -19,18 +19,18 @@ function delayedRequest () {
 
 module.exports = function buildClient (baseUrl) {
 	assert(typeof baseUrl === 'string', 'baseUrl must be string');
-	
+
 	var client = new ApiClient({
 		baseUrl: baseUrl,
 		methods: {
 			auth: 'post /private/api/auth.php?type=json',
 
-			getCurrentAccount: 'get /private/api/v2/json/accounts/current',
+			getCurrentAccount: 'get /api/v4/account',
 
 			getTasksList: 'get /private/api/v2/json/tasks/list',
 			createTask: 'post /private/api/v2/json/tasks/set',
 
-			getContactsList: 'get /private/api/v2/json/contacts/list',			
+			getContactsList: 'get /private/api/v2/json/contacts/list',
 			getContactsLinks: 'get /private/api/v2/json/contacts/links',
 			createContact: 'post /private/api/v2/json/contacts/set',
 

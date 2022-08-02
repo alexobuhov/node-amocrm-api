@@ -27,17 +27,17 @@ module.exports = function buildClient (baseUrl) {
 
 			getCurrentAccount: 'get /api/v4/account',
 
-			getTasksList: 'get /private/api/v2/json/tasks/list',
-			createTask: 'post /private/api/v2/json/tasks/set',
+			getTasksList: 'get /api/v4/tasks',
+			createTask: 'post /api/v4/tasks',
 
-			getContactsList: 'get /private/api/v2/json/contacts/list',
+			getContactsList: 'get /api/v4/contacts',
 			getContactsLinks: 'get /private/api/v2/json/contacts/links',
-			createContact: 'post /private/api/v2/json/contacts/set',
+			createContact: 'post /api/v4/contacts',
 
-			createLead: 'post /private/api/v2/json/leads/set',
-			getLeads: 'get /private/api/v2/json/leads/list',
+			createLead: 'post /api/v4/leads',
+			getLeads: 'get /api/v4/leads',
 
-			createNote: 'post /private/api/v2/json/notes/set',
+			createNote: 'post /api/v4/leads/notes',
 		},
 
 		transformRequest: {

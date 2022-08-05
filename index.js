@@ -98,9 +98,8 @@ function parseCreateContact (res) {
 }
 
 function parseGetCurrentAccount (res) {
-	console.log(res)
-	assert(res.data.response.account && res.status === 200, 'Can\'t get current account info for some reason');
-	return res.data.response.account;
+	assert(res.data && res.status === 200, 'Can\'t get current account info for some reason');
+	return res.data;
 }
 
 function parseContactsList (res) {

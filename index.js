@@ -98,6 +98,7 @@ function parseCreateContact (res) {
 }
 
 function parseGetCurrentAccount (res) {
+	console.log(res)
 	assert(res.data.response.account && res.status === 200, 'Can\'t get current account info for some reason');
 	return res.data.response.account;
 }
@@ -109,7 +110,8 @@ function parseContactsList (res) {
 
 
 function prepareCreateLead (params, requestBody, opts) {
-	requestBody = { request: { leads: { add: [params] } } };
+	requestBody = { request: [params]};
+	сonsole.log([params, requestBody, opts]);
 	return [params, requestBody, opts];
 }
 

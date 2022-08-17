@@ -1,13 +1,14 @@
-var assert = require('assert');
-var ApiClient = require('apiapi');
-var request = require('axios');
-var Promise = require('bluebird');
+const _ = require('lodash');
+const assert = require('assert');
+const ApiClient = require('apiapi');
+const request = require('axios');
+const Promise = require('bluebird');
 
-var REQUEST_DELAY = 1100;
+const REQUEST_DELAY = 1100;
 
 //Delay request for ~1sec
 function delayedRequest () {
-	var args = arguments;
+	const args = arguments;
 	return new Promise(function (resolve, reject) {
 		setTimeout(function callRequest () {
 			return request.apply(request, args)
@@ -20,116 +21,104 @@ function delayedRequest () {
 module.exports = function buildClient (baseUrl) {
 	assert(typeof baseUrl === 'string', 'baseUrl must be string');
 
-	var client = new ApiClient({
+	const client = new ApiClient({
 		baseUrl: baseUrl,
 		methods: {
-			auth: 'post /private/api/auth.php?type=json',
+			getCustomFieldsLeads: 'get /api/v4/leads/custom_fields',
+			getCustomFieldsContacts: 'get /api/v4/contacts/custom_fields',
+			getPipelines: 'get /api/v4/leads/pipelines',
+			getUsers: 'get /api/v4/users',
 
-			getCurrentAccount: 'get /api/v4/account',
+			getAccessToken: 'post /oauth2/access_token',
+			refreshAccessToken: 'post /oauth2/access_token',
 
-			getTasksList: 'get /api/v4/tasks',
-			createTask: 'post /api/v4/tasks',
-
-			getContactsList: 'get /api/v4/contacts',
-			getContactsLinks: 'get /private/api/v2/json/contacts/links',
 			createContact: 'post /api/v4/contacts',
-
 			createLead: 'post /api/v4/leads',
-			getLeads: 'get /api/v4/leads',
-
+			setLinks: 'post /api/v4/leads/link',
 			createNote: 'post /api/v4/leads/notes',
 		},
 
 		transformRequest: {
-			createTask: prepareCreateTask,
-			createContact: prepareCreateContact,
-			createLead: prepareCreateLead,
-			createNote: prepareCreateNote
+			createContact: prepareRequest,
+			createLead: prepareRequest,
+			setLinks: prepareRequest,
+			createNote: prepareRequest,
+
+			getAccessToken: prepareGetAccessToken,
+			refreshAccessToken: prepareRefreshAccessToken,
 		},
 		transformResponse: {
-			auth: storeAuth,
-			createTask: parseCreateTask,
-			getCurrentAccount: parseGetCurrentAccount,
-			getContactsList: parseContactsList,
-			getContactsLinks: parseGetContactsLinks,
+			getCustomFieldsLeads: parseGetCustomFieldsLeads,
+			getCustomFieldsContacts: parseGetCustomFieldsContacts,
+			getPipelines: parseGetPipelines,
+			getUsers: parseGetUsers,
+
+			getAccessToken: parseResponse,
+			refreshAccessToken: parseResponse,
+
 			createLead: parseCreateLead,
 			createContact: parseCreateContact,
-			createNote: parseCreateNote
+			setLinks: parseSetLinks,
+			createNote: parseCreateNote,
 		}
 	});
 
 	client.request = delayedRequest;
+
 	return client;
 };
 
-function storeAuth (res) {
-	var cookies = res.headers['set-cookie'];
-
-	if (!cookies) {
-		throw new Error('AmoCRM auth failed');
-	}
-
-	this.headers.Cookie = cookies.map(parseCookie).join('; ');
-	return res.data;
-
-	function parseCookie (cookieHeader) {
-		return cookieHeader.split(';')[0];
-	}
+function prepareRequest(params, requestBody, opts) {
+	return [params, [params], opts];
 }
 
-function prepareCreateTask (params, requestBody, opts) {
-	requestBody = { request: { tasks: { add: [params] } } };
-	return [params, requestBody, opts];
-}
-
-function prepareCreateContact (params, requestBody, opts) {
-	requestBody = { request: { contacts: { add: [params] } } };
-	return [params, requestBody, opts];
-}
-
-function parseCreateTask (res) {
-	assert(res.data.response.tasks.add.length && res.status === 200, 'Task is not added due to some error');
-	return res.data.response.tasks.add[0];
-}
-
-function parseCreateContact (res) {
-	assert(res.data.response.contacts.add.length && res.status === 200, 'Contact is not created due to some error');
-	return res.data.response.contacts.add[0];
-}
-
-function parseGetCurrentAccount (res) {
-	assert(res.data && res.status === 200, 'Can\'t get current account info for some reason');
+function parseResponse(res) {
+	assert(res.data && res.status === 200, 'Response not parse due to some error');
 	return res.data;
 }
 
-function parseContactsList (res) {
-	assert(res.data.response.contacts && res.status === 200, 'Contacts list query error');
-	return res.data.response.contacts;
+function prepareGetAccessToken(params, requestBody, opts) {
+	requestBody = _.assign({}, params, {'grant_type': 'authorization_code'});
+	return [params, requestBody, opts];
 }
-
-
-function prepareCreateLead (params, requestBody, opts) {
-	requestBody = { request: [params]};
-	сonsole.log([params, requestBody, opts]);
+function prepareRefreshAccessToken(params, requestBody, opts) {
+	requestBody = _.assign({}, params, {'grant_type': 'refresh_token'});
 	return [params, requestBody, opts];
 }
 
-function parseCreateLead (res) {
-	assert(res.data.response.leads.add.length && res.status === 200, 'Lead is not added due to some error');
-	return res.data.response.leads.add[0];
+function parseCreateContact(res) {
+	assert(res.data._embedded.contacts.length && res.status === 200, 'Contact is not created due to some error');
+	return res.data._embedded.contacts[0];
 }
 
-function prepareCreateNote (params, requestBody, opts) {
-	requestBody = { request: { notes: { add: [params] } } };
-	return [params, requestBody, opts];
+function parseCreateLead(res) {
+	assert(res.data._embedded.leads.length && res.status === 200, 'Lead is not added due to some error');
+	return res.data._embedded.leads[0];
 }
 
-function parseCreateNote (res) {
-	assert(res.data.response.notes.add.length && res.status === 200, 'Note is not added due to some error');
-	return res.data.response.notes.add[0];
+function parseCreateNote(res) {
+	assert(res.data._embedded.notes.length && res.status === 200, 'Tags are not added due to some error');
+	return res.data._embedded.notes;
 }
 
-function parseGetContactsLinks (res) {
-	assert(res.data.response.links.length && res.status === 200, 'Get Contacts Links due to some error');
-	return res.data.response.links;
+function parseSetLinks(res) {
+	assert(res.data._embedded.links.length && res.status === 200, 'Link is not added due to some error');
+	return res.data._embedded.links;
+}
+
+function parseGetCustomFieldsLeads(res) {
+	assert(res.data._embedded.custom_fields && res.status === 200, 'Get Custom Fields Leads not parse due to some error');
+	return res.data._embedded.custom_fields;
+}
+function parseGetCustomFieldsContacts(res) {
+	assert(res.data._embedded.custom_fields && res.status === 200, 'Get Custom Fields Contacts not parse due to some error');
+	return res.data._embedded.custom_fields;
+}
+function parseGetPipelines(res) {
+	assert(res.data._embedded.pipelines && res.status === 200, 'Get Pipelines not parse due to some error');
+	return res.data._embedded.pipelines;
+}
+function parseGetUsers(res) {
+	assert(res.data._embedded.users && res.status === 200, 'Get Users not parse due to some error');
+	return res.data._embedded.users;
 }

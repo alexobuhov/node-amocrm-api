@@ -69,7 +69,8 @@ module.exports = function buildClient (baseUrl) {
 };
 
 function prepareRequest(params, requestBody, opts) {
-	return [params, [params], opts];
+	requestBody = _.pickBy(params, (value) => !_.isNull(value));
+	return [params, [requestBody], opts];
 }
 
 function parseResponse(res) {

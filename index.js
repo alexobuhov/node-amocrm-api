@@ -24,6 +24,8 @@ module.exports = function buildClient (baseUrl) {
 	const client = new ApiClient({
 		baseUrl: baseUrl,
 		methods: {
+			auth: 'post /private/api/auth.php?type=json',
+
 			getCustomFieldsLeads: 'get /api/v4/leads/custom_fields',
 			getCustomFieldsContacts: 'get /api/v4/contacts/custom_fields',
 			getPipelines: 'get /api/v4/leads/pipelines',
@@ -48,6 +50,7 @@ module.exports = function buildClient (baseUrl) {
 			refreshAccessToken: prepareRefreshAccessToken,
 		},
 		transformResponse: {
+			auth: storeAuth,
 			getCustomFieldsLeads: parseGetCustomFieldsLeads,
 			getCustomFieldsContacts: parseGetCustomFieldsContacts,
 			getPipelines: parseGetPipelines,
@@ -67,6 +70,21 @@ module.exports = function buildClient (baseUrl) {
 
 	return client;
 };
+
+function storeAuth(res) {
+	const cookies = res.headers['set-cookie'];
+
+	if (!cookies) {
+		throw new Error('AmoCRM auth failed');
+	}
+
+	this.headers.Cookie = cookies.map(parseCookie).join('; ');
+	return res.data;
+
+	function parseCookie (cookieHeader) {
+		return cookieHeader.split(';')[0];
+	}
+}
 
 function prepareRequest(params, requestBody, opts) {
 	requestBody = _.pickBy(params, (value) => !_.isNull(value));

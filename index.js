@@ -127,11 +127,11 @@ function parseSetLinks(res) {
 
 function parseGetCustomFieldsLeads(res) {
 	assert(res.data._embedded.custom_fields && res.status === 200, 'Get Custom Fields Leads not parse due to some error');
-	return res.data._embedded.custom_fields;
+	return res.data;
 }
 function parseGetCustomFieldsContacts(res) {
 	assert(res.data._embedded.custom_fields && res.status === 200, 'Get Custom Fields Contacts not parse due to some error');
-	return res.data._embedded.custom_fields;
+	return res.data;
 }
 function parseGetPipelines(res) {
 	assert(res.data._embedded.pipelines && res.status === 200, 'Get Pipelines not parse due to some error');

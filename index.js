@@ -139,5 +139,5 @@ function parseGetPipelines(res) {
 }
 function parseGetUsers(res) {
 	assert(res.data._embedded.users && res.status === 200, 'Get Users not parse due to some error');
-	return res.data._embedded.users;
+	return res.data;
 }

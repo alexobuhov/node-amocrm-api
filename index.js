@@ -38,6 +38,9 @@ module.exports = function buildClient (baseUrl) {
 			createLead: 'post /api/v4/leads',
 			setLinks: 'post /api/v4/leads/link',
 			createNote: 'post /api/v4/leads/notes',
+
+			createUnsortedLead: 'post /api/v4/leads/unsorted/forms',
+			createLeadComplex: 'post /api/v4/leads/complex'
 		},
 
 		transformRequest: {
@@ -45,6 +48,8 @@ module.exports = function buildClient (baseUrl) {
 			createLead: prepareRequest,
 			setLinks: prepareRequest,
 			createNote: prepareRequest,
+			createUnsortedLead: prepareRequest,
+			createLeadComplex: prepareRequest,
 
 			getAccessToken: prepareGetAccessToken,
 			refreshAccessToken: prepareRefreshAccessToken,
@@ -63,6 +68,8 @@ module.exports = function buildClient (baseUrl) {
 			createContact: parseCreateContact,
 			setLinks: parseSetLinks,
 			createNote: parseCreateNote,
+			createUnsortedLead: parseCreateUnsortedLead,
+			createLeadComplex: parseResponse,
 		}
 	});
 
@@ -118,6 +125,11 @@ function parseCreateLead(res) {
 function parseCreateNote(res) {
 	assert(res.data._embedded.notes.length && res.status === 200, 'Tags are not added due to some error');
 	return res.data._embedded.notes;
+}
+
+function parseCreateUnsortedLead(res) {
+	assert(res.data._embedded.unsorted.length && res.status === 200, 'Tags are not added due to some error');
+	return res.data._embedded.unsorted;
 }
 
 function parseSetLinks(res) {
